@@ -28,7 +28,7 @@ public class Boot {
 	static {
 		servers.put(new Svr("tokyo.binarii.me", "127.0.0.1", 40001), 70);
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
-		servers.put(new Svr("sgapo.binarii.me", "127.0.0.1", 40003), 90);
+//		servers.put(new Svr("osaka.binarii.me", "127.0.0.1", 40003), 90);
 	}
 
 	private static final Svr DEFAULT_SVR = new Svr("tokyo.binarii.me", "127.0.0.1", 40001);
@@ -40,7 +40,7 @@ public class Boot {
 	private static AtomicLong seq = new AtomicLong(1_0000_0001);
 
 	public static void main(String[] args) throws Exception {
-		scheduler.scheduleWithFixedDelay(ping(), 0, 15, SECONDS);
+		scheduler.scheduleWithFixedDelay(ping(), 0, 10, SECONDS);
 
 		InetSocketAddress address = new InetSocketAddress("127.0.0.1", 50001);
 		HttpServer httpServer = HttpServer.create(address, 0);
@@ -54,8 +54,8 @@ public class Boot {
 			httpExchange.close();
 
 			long seqno = seq.getAndIncrement();
-			System.out.println(format("%s SVR ==> %s", seqno, servers));
-			System.out.println(format("%s SLC <== %s\n", seqno, hosts));
+			System.out.println(format("%s SVR >> %s", seqno, servers));
+			System.out.println(format("%s SLC << %s\n", seqno, hosts));
 		});
 		httpServer.start();
 	}
