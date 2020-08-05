@@ -21,14 +21,14 @@ import static java.util.stream.Collectors.toList;
 
 public class Boot {
 
-	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
+	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
 	private static Map<Svr, Integer> servers = new ConcurrentSkipListMap<>();
 
 	static {
 		servers.put(new Svr("tokyo.binarii.me", "127.0.0.1", 40001), 70);
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
-//		servers.put(new Svr("osaka.binarii.me", "127.0.0.1", 40003), 90);
+		servers.put(new Svr("tiwan.binarii.me", "127.0.0.1", 40003), 90);
 	}
 
 	private static final Svr DEFAULT_SVR = new Svr("tokyo.binarii.me", "127.0.0.1", 40001);
@@ -40,12 +40,12 @@ public class Boot {
 	private static AtomicLong seq = new AtomicLong(1_0000_0001);
 
 	public static void main(String[] args) throws Exception {
-		scheduler.scheduleWithFixedDelay(ping(), 0, 10, SECONDS);
+		scheduler.scheduleWithFixedDelay(ping(), 0, 11, SECONDS);
 
 		InetSocketAddress address = new InetSocketAddress("127.0.0.1", 50001);
 		HttpServer httpServer = HttpServer.create(address, 0);
 		httpServer.createContext("/", httpExchange -> {
-			List<Svr> hosts = pollNewHostsOrWait();
+			List<Svr> hosts = pollSelectedHostsOrWait();
 			byte[] responseData = JSON.toJSONString(hosts).getBytes(UTF_8);
 
 			httpExchange.getResponseHeaders().set("Content-Type", "application/json;charset=utf-8");
@@ -65,7 +65,7 @@ public class Boot {
 	}
 
 	private static void ping(Svr svr) {
-		final int count = 10, packetSize = 32, timeout = 1000;
+		final int count = 10, packetSize = 16, timeout = 1000;
 		int total = 0;
 		for (int i = 0; i < count; i++) {
 			IcmpPingResponse response = IcmpPingUtil
@@ -80,10 +80,10 @@ public class Boot {
 			}
 		}
 		servers.put(svr, /* average = */ total / count);
-		compareAndUpdateSelectedHosts();
+		selectHostsThenTransfer();
 	}
 
-	private static List<Svr> pollNewHostsOrWait() {
+	private static List<Svr> pollSelectedHostsOrWait() {
 		List<Svr> v = null;
 		try {
 			v = queue.poll(1500, MILLISECONDS);
@@ -95,19 +95,25 @@ public class Boot {
 		return v;
 	}
 
-	private static void compareAndUpdateSelectedHosts() {
-		List<Svr> hosts = servers.entrySet().stream()
-				.filter(e -> e.getValue() < 85).map(Entry::getKey)
-				.collect(toList());
-
-		if (hosts.isEmpty()) {
-			Svr host = servers.entrySet().stream()
-					.min(Entry.comparingByValue())
-					.map(Entry::getKey).orElse(DEFAULT_SVR);
-			hosts = Collections.singletonList(host);
+	private static void selectHostsThenTransfer() {
+		for (int x = 75; x <= 115; x += 10) {
+			List<Svr> hosts = selectHosts(x);
+			if (hosts.size() > 0) { queue.add(hosts); return; }
 		}
 
-		queue.add(hosts);
+		Svr host = servers.entrySet().stream()
+				.min(Entry.comparingByValue())
+				.map(Entry::getKey).orElse(DEFAULT_SVR);
+
+		queue.add(Collections.singletonList(host));
+	}
+
+	private static List<Svr> selectHosts(int threshold) {
+		return servers.entrySet()
+				.stream()
+				.filter(e -> e.getValue() < threshold)
+				.map(Entry::getKey)
+				.collect(toList());
 	}
 
 	private static class Svr implements Comparable<Svr> {
