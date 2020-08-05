@@ -64,7 +64,7 @@ public class Boot {
 	}
 
 	private static void ping(Svr svr) {
-		final int count = 10, packetSize = 16, timeout = 1000;
+		final int count = 10, packetSize = 8, timeout = 1000;
 		int total = 0;
 		for (int i = 0; i < count; i++) {
 			IcmpPingResponse response = IcmpPingUtil
