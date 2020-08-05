@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -54,8 +53,8 @@ public class Boot {
 			httpExchange.close();
 
 			long seqno = seq.getAndIncrement();
-			System.out.println(format("%s SVR >> %s", seqno, servers));
-			System.out.println(format("%s SLC << %s\n", seqno, hosts));
+			System.out.printf("%s SVR >> %s%n", seqno, servers);
+			System.out.printf("%s SLC << %s%n", seqno, hosts);
 		});
 		httpServer.start();
 	}
@@ -75,8 +74,8 @@ public class Boot {
 				total += response.getDuration();
 			} else {
 				total += timeout;
-				System.out.println(format("error: %s %s", svr,
-						response.getErrorMessage()));
+				System.out.printf("error: %s %s%n",
+						svr, response.getErrorMessage());
 			}
 		}
 		servers.put(svr, /* average = */ total / count);
@@ -90,7 +89,7 @@ public class Boot {
 			if (v != null) current = v;
 			else v = current;
 		} catch (InterruptedException e) {
-			System.out.println(format("Error: %s", e));
+			System.out.printf("error: %s%n", e);
 		}
 		return v;
 	}
