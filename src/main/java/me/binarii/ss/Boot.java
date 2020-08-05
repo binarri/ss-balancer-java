@@ -96,7 +96,7 @@ public class Boot {
 	}
 
 	private static void selectHostsThenTransfer() {
-		for (int x = 75; x <= 115; x += 10) {
+		for (int x = 80; x <= 120; x += 10) {
 			List<Svr> hosts = selectHosts(x);
 			if (hosts.size() > 0) { queue.add(hosts); return; }
 		}
