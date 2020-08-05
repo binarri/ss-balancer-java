@@ -53,8 +53,8 @@ public class Boot {
 			httpExchange.close();
 
 			long seqno = seq.getAndIncrement();
-			System.out.printf("%s SVR >> %s%n", seqno, servers);
-			System.out.printf("%s SLC << %s%n", seqno, hosts);
+			System.out.printf("%s SVR >> %s%n%n", seqno, servers);
+			System.out.printf("%s SLC << %s%n%n", seqno, hosts);
 		});
 		httpServer.start();
 	}
@@ -74,7 +74,7 @@ public class Boot {
 				total += response.getDuration();
 			} else {
 				total += timeout;
-				System.out.printf("error: %s %s%n",
+				System.out.printf("error: %s %s%n%n",
 						svr, response.getErrorMessage());
 			}
 		}
@@ -89,7 +89,7 @@ public class Boot {
 			if (v != null) current = v;
 			else v = current;
 		} catch (InterruptedException e) {
-			System.out.printf("error: %s%n", e);
+			System.out.printf("error: %s%n%n", e);
 		}
 		return v;
 	}
