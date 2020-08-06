@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 import org.icmp4j.IcmpPingResponse;
 import org.icmp4j.IcmpPingUtil;
+import org.icmp4j.logger.Logger;
+import org.icmp4j.logger.PrintStreamLogger;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -24,10 +27,14 @@ public class Boot {
 
 	private static Map<Svr, Integer> servers = new ConcurrentSkipListMap<>();
 
+	private static Logger logger;
 	static {
 		servers.put(new Svr("tokyo.binarii.me", "127.0.0.1", 40001), 70);
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
 		servers.put(new Svr("tiwan.binarii.me", "127.0.0.1", 40003), 90);
+
+		PrintStreamLogger.setLogLevel("INFO");
+		logger = Logger.getLogger(Boot.class);
 	}
 
 	private static final Svr DEFAULT_SVR = new Svr("tokyo.binarii.me", "127.0.0.1", 40001);
@@ -74,8 +81,7 @@ public class Boot {
 				total += response.getDuration();
 			} else {
 				total += timeout;
-				System.out.printf("error: %s %s%n",
-						svr, response.getErrorMessage());
+				logger.error(format("%s %s", svr, response.getErrorMessage()));
 			}
 		}
 		servers.put(svr, /* average = */ total / count);
@@ -89,7 +95,7 @@ public class Boot {
 			if (v != null) current = v;
 			else v = current;
 		} catch (InterruptedException e) {
-			System.out.printf("error: %s%n", e);
+			logger.error(e.toString());
 		}
 		return v;
 	}
@@ -97,7 +103,10 @@ public class Boot {
 	private static void selectHostsThenTransfer() {
 		for (int x = 85; x <= 125; x += 10) {
 			List<Svr> hosts = selectHosts(x);
-			if (hosts.size() > 0) { queue.add(hosts); return; }
+			if (hosts.size() > 0) {
+				queue.add(hosts);
+				return;
+			}
 		}
 
 		Svr host = servers.entrySet().stream()
@@ -201,9 +210,7 @@ public class Boot {
 
 		static ThreadLocal<Gson> gson = ThreadLocal.withInitial(Gson::new);
 
-		static String toJSONString(Object obj) {
-			return gson.get().toJson(obj);
-		}
+		static String toJSONString(Object obj) { return gson.get().toJson(obj); }
 
 	}
 
