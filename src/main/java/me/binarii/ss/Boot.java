@@ -23,25 +23,26 @@ import static java.util.stream.Collectors.toList;
 
 public class Boot {
 
+	private static final Logger logger = Logger.getLogger(Boot.class);
+
 	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
 	private static Map<Svr, Integer> servers = new ConcurrentSkipListMap<>();
 
-	private static Logger logger;
 	static {
 		servers.put(new Svr("tokyo.binarii.me", "127.0.0.1", 40001), 70);
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
 		servers.put(new Svr("tiwan.binarii.me", "127.0.0.1", 40003), 90);
 
 		PrintStreamLogger.setLogLevel("INFO");
-		logger = Logger.getLogger(Boot.class);
 	}
 
-	private static final Svr DEFAULT_SVR = new Svr("tokyo.binarii.me", "127.0.0.1", 40001);
+	private static final List<Svr> DEFAULT_SVRS = Collections
+			.singletonList(new Svr("tokyo.binarii.me", "127.0.0.1", 40001));
+
+	private static volatile List<Svr> current = DEFAULT_SVRS;
 
 	private static TransferQueue<List<Svr>> queue = new LinkedTransferQueue<>();
-
-	private static volatile List<Svr> current = Collections.singletonList(DEFAULT_SVR);
 
 	private static AtomicLong seq = new AtomicLong(1_0000_0001);
 
@@ -101,27 +102,19 @@ public class Boot {
 	}
 
 	private static void selectHostsThenTransfer() {
-		for (int x = 85; x <= 125; x += 10) {
-			List<Svr> hosts = selectHosts(x);
-			if (hosts.size() > 0) {
-				queue.add(hosts);
-				return;
-			}
+		List<Svr> hosts = servers.entrySet().stream()
+				.filter(e -> e.getValue() < 125)
+				.map(Entry::getKey).collect(toList());
+
+		if (hosts.isEmpty()) {
+			hosts = servers.entrySet().stream()
+					.min(Entry.comparingByValue())
+					.map(Entry::getKey)
+					.map(Collections::singletonList)
+					.orElse(DEFAULT_SVRS);
 		}
 
-		Svr host = servers.entrySet().stream()
-				.min(Entry.comparingByValue())
-				.map(Entry::getKey).orElse(DEFAULT_SVR);
-
-		queue.add(Collections.singletonList(host));
-	}
-
-	private static List<Svr> selectHosts(int threshold) {
-		return servers.entrySet()
-				.stream()
-				.filter(e -> e.getValue() < threshold)
-				.map(Entry::getKey)
-				.collect(toList());
+		queue.add(hosts);
 	}
 
 	private static class Svr implements Comparable<Svr> {
