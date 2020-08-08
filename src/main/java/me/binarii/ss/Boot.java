@@ -32,7 +32,6 @@ public class Boot {
 	static {
 		servers.put(new Svr("tokyo.binarii.me", "127.0.0.1", 40001), 70);
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
-		servers.put(new Svr("tiwan.binarii.me", "127.0.0.1", 40003), 90);
 
 		PrintStreamLogger.setLogLevel("INFO");
 	}
