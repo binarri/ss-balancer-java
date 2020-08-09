@@ -25,8 +25,6 @@ public class Boot {
 
 	private static final Logger logger = Logger.getLogger(Boot.class);
 
-	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-
 	private static Map<Svr, Integer> servers = new ConcurrentSkipListMap<>();
 
 	static {
@@ -35,6 +33,9 @@ public class Boot {
 
 		PrintStreamLogger.setLogLevel("INFO");
 	}
+
+	private static ScheduledExecutorService scheduler = Executors
+			.newScheduledThreadPool(servers.size() + 1);
 
 	private static final List<Svr> DEFAULT_SVRS = Collections
 			.singletonList(new Svr("tokyo.binarii.me", "127.0.0.1", 40001));
@@ -202,7 +203,9 @@ public class Boot {
 
 		static ThreadLocal<Gson> gson = ThreadLocal.withInitial(Gson::new);
 
-		static String toJSONString(Object obj) { return gson.get().toJson(obj); }
+		static String toJSONString(Object obj) {
+			return gson.get().toJson(obj);
+		}
 
 	}
 
