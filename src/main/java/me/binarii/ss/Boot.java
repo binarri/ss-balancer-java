@@ -27,6 +27,9 @@ public class Boot {
 
 	private static Map<Svr, Integer> servers = new ConcurrentSkipListMap<>();
 
+	private static ScheduledExecutorService scheduler =
+			Executors.newScheduledThreadPool(servers.size() + 1);
+
 	static {
 		String libPath = System.getProperty("java.library.path");
 		if (libPath == null || libPath.isEmpty()) {
@@ -37,10 +40,10 @@ public class Boot {
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
 
 		PrintStreamLogger.setLogLevel("INFO");
-	}
 
-	private static ScheduledExecutorService scheduler = Executors
-			.newScheduledThreadPool(servers.size() + 1);
+		((ThreadPoolExecutor) scheduler).setKeepAliveTime(30, SECONDS);
+		((ThreadPoolExecutor) scheduler).allowCoreThreadTimeOut(true);
+	}
 
 	private static final List<Svr> DEFAULT_SVRS = Collections
 			.singletonList(new Svr("tokyo.binarii.me", "127.0.0.1", 40001));
