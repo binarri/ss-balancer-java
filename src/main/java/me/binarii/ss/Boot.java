@@ -28,6 +28,11 @@ public class Boot {
 	private static Map<Svr, Integer> servers = new ConcurrentSkipListMap<>();
 
 	static {
+		String libPath = System.getProperty("java.library.path");
+		if (libPath == null || libPath.isEmpty()) {
+			System.setProperty("java.library.path", "lib");
+		}
+
 		servers.put(new Svr("tokyo.binarii.me", "127.0.0.1", 40001), 70);
 		servers.put(new Svr("hongk.binarii.me", "127.0.0.1", 40002), 80);
 
