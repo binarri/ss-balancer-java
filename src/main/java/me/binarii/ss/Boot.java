@@ -35,8 +35,8 @@ public class Boot {
 		InetSocketAddress address = new InetSocketAddress("127.0.0.1", 50001);
 		HttpServer httpServer = HttpServer.create(address, 0);
 		httpServer.createContext("/", httpExchange -> {
-			List<ProxyServer> hosts = selector.selectProxyServers();
-			byte[] responseData = JSON.toJSONString(hosts).getBytes(UTF_8);
+			List<ProxyServer> selections = selector.selectProxyServers();
+			byte[] responseData = JSON.toJSONString(selections).getBytes(UTF_8);
 
 			httpExchange.getResponseHeaders().set("Content-Type", "application/json;charset=utf-8");
 			httpExchange.sendResponseHeaders(200, responseData.length);
@@ -45,7 +45,7 @@ public class Boot {
 
 			long seqno = seq.getAndIncrement();
 			System.out.printf("%s SVR >> %s%n", seqno, proxyServers);
-			System.out.printf("%s SLC << %s%n%n", seqno, hosts);
+			System.out.printf("%s SLC << %s%n%n", seqno, selections);
 		});
 		httpServer.start();
 

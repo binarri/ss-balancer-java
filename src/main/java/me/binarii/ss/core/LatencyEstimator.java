@@ -135,7 +135,7 @@ public class LatencyEstimator extends Thread {
 				return elapsedMillis;
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			logger.debug(e.getMessage(), e);
 		} finally {
 			request.releaseConnection();
 		}
