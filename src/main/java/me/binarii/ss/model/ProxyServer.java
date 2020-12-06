@@ -2,6 +2,8 @@ package me.binarii.ss.model;
 
 public class ProxyServer implements Comparable<ProxyServer> {
 
+	public static final Object LOCK = new Object();
+
 	private String name;
 
 	private String host;
@@ -45,7 +47,9 @@ public class ProxyServer implements Comparable<ProxyServer> {
 	}
 
 	public void setLatency(long latency) {
-		this.latency = latency;
+		synchronized (LOCK) {
+			this.latency = latency;
+		}
 	}
 
 	@Override

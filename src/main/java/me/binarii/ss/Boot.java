@@ -20,8 +20,8 @@ public class Boot {
 	private static List<ProxyServer> proxyServers = new ArrayList<>();
 
 	static {
-		proxyServers.add(new ProxyServer("tokyo.binarii.me", "127.0.0.1", 40001));
-		proxyServers.add(new ProxyServer("hongk.binarii.me", "127.0.0.1", 40002));
+		proxyServers.add(new ProxyServer("hongk.binarii.me", "127.0.0.1", 40001));
+		proxyServers.add(new ProxyServer("tokyo.binarii.me", "127.0.0.1", 40002));
 		proxyServers.stream().map(LatencyEstimator::new).forEach(latencyEstimators::add);
 	}
 

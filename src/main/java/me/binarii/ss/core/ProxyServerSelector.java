@@ -23,18 +23,31 @@ public class ProxyServerSelector {
 	}
 
 	public List<ProxyServer> selectProxyServers() {
-		List<ProxyServer> hosts = proxyServers.stream()
-				.filter(proxy -> proxy.getLatency() < threshold)
-				.collect(toList());
-
-		if (hosts.isEmpty()) {
-			hosts = proxyServers.stream()
+		synchronized (ProxyServer.LOCK) {
+			Long minValue = proxyServers.stream()
 					.min(ProxyServer::compareTo)
-					.map(Collections::singletonList)
-					.orElse(defaultProxy);
-		}
+					.map(ProxyServer::getLatency)
+					.orElse(0L);
 
-		return hosts;
+			List<ProxyServer> hosts = proxyServers.stream()
+					.filter(proxy -> proxy.getLatency() < threshold)
+					.collect(toList());
+
+			if (hosts.isEmpty()) {
+				hosts = proxyServers.stream()
+						.min(ProxyServer::compareTo)
+						.map(Collections::singletonList)
+						.orElse(defaultProxy);
+			}
+
+			if (hosts.size() > 1) {
+				hosts = proxyServers.stream()
+						.filter(proxy -> proxy.getLatency() - minValue <= 200)
+						.collect(toList());
+			}
+
+			return hosts;
+		}
 	}
 
 }
