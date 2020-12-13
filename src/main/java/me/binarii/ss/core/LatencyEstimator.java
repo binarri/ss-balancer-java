@@ -119,7 +119,7 @@ public class LatencyEstimator extends Thread {
 		}
 		double sdev = Math.sqrt(sum * 1.0 / rounds);
 
-		return average * 0.7 + sdev * 3 * 0.3;
+		return average * 0.6 + sdev * 3 * 0.4;
 	}
 
 	private long testOnece(String uri) {
